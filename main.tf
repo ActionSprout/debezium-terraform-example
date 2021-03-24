@@ -79,6 +79,55 @@ resource "digitalocean_droplet" "postgres" {
   }
 }
 
+resource "null_resource" "setup-tables" {
+  depends_on = [digitalocean_droplet.postgres]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    host        = digitalocean_droplet.postgres.ipv4_address
+    private_key = var.do_private_key
+  }
+
+  provisioner "file" {
+    source = "setup.sql"
+    destination = "setup.sql"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "docker-compose exec -T postgres psql -U debezium < setup.sql"
+    ]
+  }
+}
+
+resource "null_resource" "setup-debezium" {
+  depends_on = [
+    digitalocean_droplet.postgres,
+    digitalocean_droplet.debezium,
+  ]
+
+  connection {
+    type        = "ssh"
+    user        = "root"
+    host        = digitalocean_droplet.debezium.ipv4_address
+    private_key = var.do_private_key
+  }
+
+  provisioner "file" {
+    source = "connector.json"
+    destination = "connector.json.template"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sed 's/PGHOST/${digitalocean_droplet.postgres.ipv4_address_private}/' connector.json.template > connector.json",
+      "curl -X POST -H 'Accept: application/json' -H 'Content-Type: application/json' localhost:8083/connectors/ -d @connector.json | jq"
+    ]
+  }
+}
+
+
 output "debezium_address" {
   value = digitalocean_droplet.debezium.ipv4_address
 }
