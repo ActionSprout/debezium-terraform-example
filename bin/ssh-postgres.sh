@@ -1,3 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+IFS=$'\n\t'
 
-ssh root@$(terraform output -raw postgres_address) $@
+# shellcheck disable=SC2029
+ssh root@"$(terraform output -raw postgres_address)" "$@"
