@@ -45,7 +45,8 @@ resource "digitalocean_droplet" "debezium" {
 
   provisioner "remote-exec" {
     inline = [
-      "docker-compose up -d debezium"
+      "docker-compose up -d debezium",
+      "wget --retry-connrefused --retry-on-http-error=404 --tries=10 --wait=4 --spider localhost:8083"
     ]
   }
 }
