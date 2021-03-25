@@ -5,7 +5,7 @@ variable "do_private_key" {}
 terraform {
   required_providers {
     digitalocean = {
-      source = "digitalocean/digitalocean"
+      source  = "digitalocean/digitalocean"
       version = "2.6.0"
     }
   }
@@ -21,12 +21,12 @@ resource "digitalocean_ssh_key" "public_key" {
 }
 
 resource "digitalocean_droplet" "debezium" {
-  name     = "experiment-debezium"
-  image    = "docker-20-04"
-  region   = "sfo2"
-  size     = "s-2vcpu-4gb"
+  name               = "experiment-debezium"
+  image              = "docker-20-04"
+  region             = "sfo2"
+  size               = "s-2vcpu-4gb"
   private_networking = true
-  ssh_keys = [digitalocean_ssh_key.public_key.fingerprint]
+  ssh_keys           = [digitalocean_ssh_key.public_key.fingerprint]
 
   tags = ["debezium"]
 
@@ -38,7 +38,7 @@ resource "digitalocean_droplet" "debezium" {
   }
 
   provisioner "file" {
-    source = "docker-compose.yml"
+    source      = "docker-compose.yml"
     destination = "docker-compose.yml"
 
   }
@@ -52,12 +52,12 @@ resource "digitalocean_droplet" "debezium" {
 }
 
 resource "digitalocean_droplet" "postgres" {
-  name     = "experiment-debezium-postgres"
-  image    = "docker-20-04"
-  region   = "sfo2"
-  size     = "s-2vcpu-4gb"
+  name               = "experiment-debezium-postgres"
+  image              = "docker-20-04"
+  region             = "sfo2"
+  size               = "s-2vcpu-4gb"
   private_networking = true
-  ssh_keys = [digitalocean_ssh_key.public_key.fingerprint]
+  ssh_keys           = [digitalocean_ssh_key.public_key.fingerprint]
 
   tags = ["debezium"]
 
@@ -69,7 +69,7 @@ resource "digitalocean_droplet" "postgres" {
   }
 
   provisioner "file" {
-    source = "docker-compose.yml"
+    source      = "docker-compose.yml"
     destination = "docker-compose.yml"
   }
 
@@ -91,7 +91,7 @@ resource "null_resource" "setup-tables" {
   }
 
   provisioner "file" {
-    source = "setup.sql"
+    source      = "setup.sql"
     destination = "setup.sql"
   }
 
@@ -116,7 +116,7 @@ resource "null_resource" "setup-debezium" {
   }
 
   provisioner "file" {
-    source = "connector.json"
+    source      = "connector.json"
     destination = "connector.json.template"
   }
 
@@ -127,7 +127,6 @@ resource "null_resource" "setup-debezium" {
     ]
   }
 }
-
 
 output "debezium_address" {
   value = digitalocean_droplet.debezium.ipv4_address
@@ -140,4 +139,3 @@ output "postgres_address" {
 output "postgres_private_address" {
   value = digitalocean_droplet.postgres.ipv4_address_private
 }
-
