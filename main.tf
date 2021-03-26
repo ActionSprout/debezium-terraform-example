@@ -16,12 +16,12 @@ provider "digitalocean" {
 }
 
 resource "digitalocean_ssh_key" "public_key" {
-  name       = "Debezium experiment public key"
+  name       = "Debezium example public key"
   public_key = var.do_public_key
 }
 
 resource "digitalocean_droplet" "debezium" {
-  name               = "experiment-debezium"
+  name               = "debezium-example"
   image              = "docker-20-04"
   region             = "sfo2"
   size               = "s-2vcpu-4gb"
@@ -52,7 +52,7 @@ resource "digitalocean_droplet" "debezium" {
 }
 
 resource "digitalocean_droplet" "postgres" {
-  name               = "experiment-debezium-postgres"
+  name               = "debezium-example-postgres"
   image              = "docker-20-04"
   region             = "sfo2"
   size               = "s-2vcpu-4gb"
@@ -97,6 +97,7 @@ resource "null_resource" "setup-tables" {
 
   provisioner "remote-exec" {
     inline = [
+      # TODO: Wait for postgres to be ready
       "docker-compose exec -T postgres psql -U debezium < setup.sql"
     ]
   }
