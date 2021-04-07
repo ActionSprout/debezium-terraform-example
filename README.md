@@ -20,3 +20,7 @@ To run this example:
    bin/run-query.sh "INSERT INTO PEOPLE (email, name) VALUES ('test@example.com', 'Testing Tester');"
    bin/run-query.sh "DELETE FROM PEOPLE;"
    ```
+
+
+
+TODO: Setup deployment of (something like `docker save people-consumer | bzip2 | pv | bin/ssh-debezium.sh "bunzip2 | docker load"`)
