@@ -1,0 +1,54 @@
+version: '3'
+services:
+  etl-postgres:
+    image: debezium/postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - ~/container-volumes/etl-postgres/postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: 'etl-postgres'
+      POSTGRES_PASSWORD: 'etl-postgres'
+
+  etl-zookeeper:
+    image: debezium/zookeeper
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  etl-kafka:
+    image: debezium/kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    depends_on:
+      - etl-zookeeper
+    environment:
+      ZOOKEEPER_CONNECT: "etl-zookeeper"
+      KAFKA_ZOOKEEPER_CONNECT: etl-zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://etl-kafka:9092,OUTSIDE://etl-kafka:9094
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://etl-kafka:9092,OUTSIDE://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+
+  etl-debezium:
+    image: debezium-setup
+    build:
+      context: .
+      dockerfile: Dockerfile-connect
+    ports:
+      - "8083:8083"
+    depends_on:
+      - etl-postgres
+      - etl-kafka
+      - etl-zookeeper
+    environment:
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my-connect-configs
+      OFFSET_STORAGE_TOPIC: my-connect-offsets
+      ADVERTISED_HOST_NAME: localhost
+      STATUS_STORAGE_TOPIC: debezium-connect-status
+      CONNECT_ZOOKEEPER_CONNECT: etl-zookeeper:2181
+      BOOTSTRAP_SERVERS: etl-kafka:9092
+

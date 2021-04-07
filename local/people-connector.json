@@ -1,0 +1,17 @@
+{
+  "name": "people-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+    "database.hostname": "etl-postgres",
+    "database.port": "5432",
+    "database.user": "etl-postgres",
+    "database.password": "etl-postgres",
+    "database.dbname": "etl-example",
+    "database.server.name": "etl-example",
+    "database.history": "etl-kafka:9092",
+    "database.history.kafka.bootstrap.servers": "etl-kafka:9092",
+    "database.history.kafka.topic": "schema-changes.people",
+    "table.include.list": "public.people"
+  }
+}

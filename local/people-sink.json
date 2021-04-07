@@ -1,0 +1,27 @@
+{
+  "name": "jdbc-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "etl-example.public.people",
+    "dialect.name": "PostgreSqlDatabaseDialect",
+    "table.name.format": "people",
+    "connection.url": "jdbc:postgresql://sink-database:5432/sink-database?user=sink-user&password=sink-pass",
+    "transforms": "unwrap,filterNullEmails,convertEmail,addTimestamp",
+    "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+    "transforms.unwrap.delete.handling.mode": "rewrite",
+    "transforms.filterNullEmails.type": "io.confluent.connect.transforms.Filter$Value",
+    "transforms.filterNullEmails.filter.condition": "$.key[?(@.email)]",
+    "transforms.filterNullEmails.filter.type": "include",
+    "transforms.filterNullEmails.missing.or.null.behavior": "fail",
+    "transforms.convertEmail.type": "org.apache.kafka.connect.transforms.ValueToKey",
+    "transforms.convertEmail.fields": "email",
+    "transforms.addTimestamp.type": "org.apache.kafka.connect.transforms.InsertField$Value",
+    "transforms.addTimestamp.timestamp.field": "updated_at",
+    "insert.mode": "upsert",
+    "pk.fields": "email",
+    "pk.mode": "record_key",
+    "fields.whitelist": "email,updated_at",
+    "delete.enabled": "true"
+  }
+}

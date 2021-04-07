@@ -4,6 +4,8 @@ services:
     image: debezium/postgres
     ports:
       - "5432:5432"
+    volumes:
+      - /root/pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: debezium
       POSTGRES_PASSWORD: debezium
@@ -24,6 +26,7 @@ services:
     environment:
       ZOOKEEPER_CONNECT: "zookeeper"
 
+
   debezium:
     image: debezium/connect
     ports:
@@ -34,11 +37,19 @@ services:
       - zookeeper
     environment:
       GROUP_ID: 1
-      CONFIG_STORAGE_TOPIC: my-connect-configs
-      OFFSET_STORAGE_TOPIC: my-connect-offsets
+      CONFIG_STORAGE_TOPIC: debezium
+      OFFSET_STORAGE_TOPIC: debezium-connect-offsets
       ADVERTISED_HOST_NAME: localhost
       STATUS_STORAGE_TOPIC: debezium-connect-status
       CONNECT_ZOOKEEPER_CONNECT: zookeeper:2181
       BOOTSTRAP_SERVERS: kafka:9092
 
-
+  consumer:
+    # Upload this image or use https://github.com/ActionSprout/rust-kafka-consumer-example
+    image: people-consumer
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_URL: kafka:9092
+      RUST_LOG: info
+      TOPIC: debezium.public.people
